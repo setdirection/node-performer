@@ -1,3 +1,4 @@
+{jsdom} = require 'jsdom'
 
 exports.performer = (options) ->
   handlers = {}
@@ -15,6 +16,19 @@ exports.performer = (options) ->
                 handler req, res, content, next
         else
           handler
+
+  contentConstructor =
+    # Pass around a DOM rather than text content for the html operations
+    'text/html': (content) ->
+        jsdom content, null,
+          features:
+            FetchExternalResources: false,
+            ProcessExternalResources: false,
+            QuerySelector: true
+
+  contentSerializer =
+    'text/html': (content) ->
+      content.innerHTML
 
   (req, res, next) ->
     writeHead = res.writeHead
@@ -41,8 +55,14 @@ exports.performer = (options) ->
 
           # Generate the input content
           content = buffer.join ''
+          if contentConstructor[contentType]
+            content = contentConstructor[contentType] content
+
           # Run the plugins
           handlers[contentType] req, res, content, (content) ->
+            # Convert back to text if necessary
+            if contentSerializer[contentType]
+              content = contentSerializer[contentType] content
 
             res.writeHead = writeHead
             res.write = write

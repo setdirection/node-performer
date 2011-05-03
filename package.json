@@ -11,7 +11,8 @@
     "node": "~v0.4.5"
   },
   "dependencies": {
-      "coffee-script": "~1.1.0"
+      "coffee-script": "~1.1.0",
+      "jsdom": "~0.2.0"
   },
   "devDependencies": {}
 }
