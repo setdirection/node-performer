@@ -1,0 +1,16 @@
+{
+  "author": "Kevin Decker <kpdecker@gmail.com>",
+  "name": "performer",
+  "description": "Frontend performance optimizing middleware",
+  "version": "0.0.1",
+  "repository": {
+    "url": ""
+  },
+  "engines": {
+    "node": "~v0.4.5"
+  },
+  "dependencies": {
+      "coffee-script": "~1.1.0"
+  },
+  "devDependencies": {}
+}
