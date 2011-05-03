@@ -1,6 +1,11 @@
 {jsdom} = require 'jsdom'
 
 exports.performer = (options) ->
+  # Short circuit if no plugins were provided
+  if not options.plugins?
+    console.warn 'Performer specified without any plugins'
+    return (res, req, next) -> next()
+
   handlers = {}
 
   # Register all of the MIME handlers in the passed plugins
