@@ -1,6 +1,6 @@
 {jsdom} = require 'jsdom'
 
-exports.performer = (options) ->
+exports.create = (options) ->
   # Short circuit if no plugins were provided
   if not options.plugins?
     console.warn 'Performer specified without any plugins'
