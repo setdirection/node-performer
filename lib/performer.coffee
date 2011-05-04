@@ -1,15 +1,8 @@
 {jsdom} = require 'jsdom'
 
-exports.create = (options) ->
-  # Short circuit if no plugins were provided
-  if not options.plugins?
-    console.warn 'Performer specified without any plugins'
-    return (res, req, next) -> next()
-
+generateHandlers = (plugins) ->
   handlers = {}
-
-  # Register all of the MIME handlers in the passed plugins
-  for plugin in options.plugins
+  for plugin in plugins
     for mime, handler of plugin
       existingHandler = handlers[mime]
 
@@ -21,6 +14,16 @@ exports.create = (options) ->
                 handler req, res, content, next
         else
           handler
+  handlers
+
+exports.create = (options) ->
+  # Short circuit if no plugins were provided
+  if not options.plugins?
+    console.warn 'Performer specified without any plugins'
+    return (res, req, next) -> next()
+
+  # Register all of the MIME handlers in the passed plugins
+  handlers = generateHandlers options.plugins
 
   contentConstructor =
     # Pass around a DOM rather than text content for the html operations
