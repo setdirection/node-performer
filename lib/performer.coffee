@@ -16,6 +16,12 @@ generateHandlers = (plugins) ->
           handler
   handlers
 
+getHeaderName = (headers, searchName) ->
+  searchName = searchName.toLowerCase()
+  for name, value of headers
+    if name.toLowerCase() == searchName
+      return name
+
 exports.create = (options) ->
   # Short circuit if no plugins were provided
   if not options.plugins?
@@ -46,7 +52,7 @@ exports.create = (options) ->
         headers = reasonPhrase
       headers or= res.headers
 
-      contentType = headers?['Content-Type']?.split(';')[0]
+      contentType = headers?[getHeaderName headers, 'content-type']?.split(';')[0]
 
       if handlers[contentType]
         # Divert the content stream for further processing
@@ -76,7 +82,7 @@ exports.create = (options) ->
             res.write = write
             res.end = end
 
-            headers['Content-Length'] = content.length
+            headers[getHeaderName headers, 'content-length'] = content.length
 
             # Send everything on the way
             res.writeHead statusCode, headers
