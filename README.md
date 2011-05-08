@@ -2,6 +2,19 @@
 
    Node port of the mod_pagespeed apache filters
 
+## Example
+### Express
+
+    var performer = require('performer');
+
+    app.use(performer.create({
+        plugins: [
+            performer.plugins.cssToHead,
+            performer.plugins.jsMin,
+            performer.plugins.cssMin
+        ]
+    }));
+
 ## License
 
 Software License Agreement (BSD License)
