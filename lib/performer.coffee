@@ -45,50 +45,68 @@ exports.create = (options) ->
       content.innerHTML
 
   (req, res, next) ->
+    headerInfo = undefined
+    buffer = undefined
+
     writeHead = res.writeHead
-
     res.writeHead = (statusCode, reasonPhrase, headers) ->
-      if arguments.length == 2
-        headers = reasonPhrase
-      headers or= res.headers
+      # Since we are not setting up the underlying header structures until later we may be called multiple
+      # times so short circuit multiple exec
+      if headerInfo
+        return
 
-      contentType = headers?[getHeaderName headers, 'content-type']?.split(';')[0]
+      headerInfo =
+        statusCode: statusCode
+        headers: headers ? reasonPhrase ? @_headers ? {}
+        contentType: headers?[getHeaderName headers, 'content-type']?.split(';')[0]
+        handler: handlers[contentType]
 
-      if handlers[contentType]
-        # Divert the content stream for further processing
+      if headerInfo.handler
         buffer = []
-
-        write = res.write
-        res.write = (chunk, encoding) ->
-          buffer.push chunk
-
-        end = res.end
-        res.end = (data, encoding) ->
-          if data?
-            buffer.push data
-
-          # Generate the input content
-          content = buffer.join ''
-          if contentConstructor[contentType]
-            content = contentConstructor[contentType] content
-
-          # Run the plugins
-          handlers[contentType] req, res, content, (content) ->
-            # Convert back to text if necessary
-            if contentSerializer[contentType]
-              content = contentSerializer[contentType] content
-
-            res.writeHead = writeHead
-            res.write = write
-            res.end = end
-
-            headers[getHeaderName headers, 'content-length'] = content.length
-
-            # Send everything on the way
-            res.writeHead statusCode, headers
-            res.end content, encoding
       else
-        res.writeHead = writeHead
-        res.writeHead arguments...
+        writeHead.apply @, arguments
+
+    write = res.write
+    res.write = (chunk, encoding) ->
+      if not headerInfo
+        @_implicitHeader()
+
+      if buffer
+        buffer.push chunk
+      else
+        write.call @, chunk, encoding
+
+    end = res.end
+    res.end = (data, encoding) ->
+      if not headerInfo
+        @_implicitHeader()
+
+      if buffer
+        if data?
+          buffer.push data
+
+        # Generate the input content
+        content = buffer.join ''
+        if contentConstructor[headerInfo.contentType]
+          content = contentConstructor[headerInfo.contentType] content
+
+        # Run the plugins
+        headerInfo.handler req, @, content, (content) ->
+          # Convert back to text if necessary
+          if contentSerializer[headerInfo.contentType]
+            content = contentSerializer[headerInfo.contentType] content
+
+          # Finally convert to a buffer to make sure that we have the byte length in the current encoding,
+          # rather than the character length that the string length would return
+          if typeof content == 'string'
+            content = new Buffer content, encoding
+          headerInfo.headers[getHeaderName headerInfo.headers, 'content-length'] = content.length
+
+          # Send everything on the way
+          writeHead.call res, headerInfo.statusCode, headerInfo.headers
+          write.call res, content
+          end.call res
+      else
+        end.call @, data, encoding
 
     next()
