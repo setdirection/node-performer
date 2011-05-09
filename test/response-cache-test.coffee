@@ -1,5 +1,3 @@
-require 'coffee-script'
-
 assert = require 'assert'
 responseCache = require '../lib/response-cache.coffee'
 
