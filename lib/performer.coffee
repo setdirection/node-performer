@@ -55,10 +55,12 @@ exports.create = (options) ->
       if headerInfo
         return
 
+      headers = headers ? reasonPhrase ? @_headers ? {}
+      contentType = headers?[getHeaderName headers, 'content-type']?.split(';')[0]
       headerInfo =
         statusCode: statusCode
-        headers: headers ? reasonPhrase ? @_headers ? {}
-        contentType: headers?[getHeaderName headers, 'content-type']?.split(';')[0]
+        headers: headers
+        contentType: contentType
         handler: handlers[contentType]
 
       if headerInfo.handler
