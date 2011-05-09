@@ -24,6 +24,9 @@
     "url": "http://github.com/kpdecker/node-performer/issues"
   },
   "main": "index",
+  "scripts": {
+    "test": "expresso test/*"
+  },
   "engines": {
     "node": "~0.4.5"
   },
@@ -33,5 +36,7 @@
       "uglify-js": "~1.0.1",
       "cssmin": "~0.3.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+      "expresso": "~0.7.5"
+  }
 }
