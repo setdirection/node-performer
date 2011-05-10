@@ -17,17 +17,12 @@ exports.getResponseCacheInfo = (res, baseTime) ->
     return
 
   expireTime = if cacheControl['max-age']
-      baseTime = if getHeader 'date'
-          new Date getHeader 'date'
-        else
-          baseTime ? new Date()
+      baseTime = parseDate(getHeader('date')) ? baseTime ? new Date()
       new Date baseTime.getTime() + parseInt(cacheControl['max-age'])*1000
     else
-      expires = getHeader 'expires'
-      expires and new Date expires
+      parseDate getHeader 'expires'
   etag = getHeader 'etag'
-  lastModified = if lastModified = getHeader 'last-modified'
-    new Date lastModified
+  lastModified = parseDate getHeader 'last-modified'
 
   if etag or expireTime or lastModified
     expires: expireTime
@@ -41,6 +36,9 @@ parseHeader = (value) ->
     kv = component.split '='
     ret[kv[0].toLowerCase()] = kv[1] or true
   ret
+parseDate = (value) ->
+  if value
+    new Date value
 
 getHeaderName = (headers, searchName) ->
   searchName = searchName.toLowerCase()
