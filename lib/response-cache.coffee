@@ -1,8 +1,7 @@
 
-# getResponseCacheInfo : Determines the expiration time for the passed headers
+# getResponseCacheInfo : Determines the cache parameters for a given request or header set
 #
 # @param res HTTP response object or Object mapping headers to value
-#
 exports.getResponseCacheInfo = (res, baseTime) ->
   getHeader = if res.getHeader
       (header) -> res.getHeader header
