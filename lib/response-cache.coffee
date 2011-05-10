@@ -26,10 +26,13 @@ exports.getResponseCacheInfo = (res, baseTime) ->
       expires = getHeader 'expires'
       expires and new Date expires
   etag = getHeader 'etag'
+  lastModified = if lastModified = getHeader 'last-modified'
+    new Date lastModified
 
-  if etag or expireTime
+  if etag or expireTime or lastModified
     expires: expireTime
     etag: etag
+    lastModified: lastModified
 
 parseHeader = (value) ->
   components = getHeaderComponents value

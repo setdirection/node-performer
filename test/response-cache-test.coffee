@@ -11,17 +11,25 @@ responseMock = (headers) ->
     headers[name.toLowerCase()]
 
 exports['getResponseCacheInfo etag'] = ->
-  assert.eql dateStr, responseCache.getResponseCacheInfo({ eTAG: dateStr })?.etag, 'ETag object'
-  assert.eql dateStr, responseCache.getResponseCacheInfo(responseMock { etag: dateStr })?.etag, 'Etag mock'
+  expected = { etag: dateStr, expires: undefined, lastModified: undefined }
+  assert.eql expected, responseCache.getResponseCacheInfo({ eTAG: dateStr }), 'Etag object'
+  assert.eql expected, responseCache.getResponseCacheInfo(responseMock { etag: dateStr }), 'Etag mock'
 
 exports['getResponseCacheInfo expires'] = ->
-  assert.eql date, responseCache.getResponseCacheInfo({ EXPIRES: dateStr })?.expires, 'Expires object'
-  assert.eql date, responseCache.getResponseCacheInfo(responseMock { expires: dateStr })?.expires, 'Expires mock'
+  expected = { etag: undefined, expires: date, lastModified: undefined }
+  assert.eql expected, responseCache.getResponseCacheInfo({ EXPIRES: dateStr }), 'Expires object'
+  assert.eql expected, responseCache.getResponseCacheInfo(responseMock { expires: dateStr }), 'Expires mock'
+
+exports['getResponseCacheInfo last-modified'] = ->
+  expected = { etag: undefined, expires: undefined, lastModified: date }
+  assert.eql expected, responseCache.getResponseCacheInfo({ 'LAST-MODIFIED': dateStr }), 'Last Modified object'
+  assert.eql expected, responseCache.getResponseCacheInfo(responseMock { 'last-modified': dateStr }), 'Last Modified mock'
 
 exports['getResponseCacheInfo max-age'] = ->
-  assert.eql date2, responseCache.getResponseCacheInfo({ 'cache-CONTROL': 'max-age=60', EXPIRES: dateStr }, date)?.expires, 'max-age object'
-  assert.eql date2, responseCache.getResponseCacheInfo(responseMock({ 'cache-control': 'max-age=60' }), date)?.expires, 'max-age mock'
-  assert.eql date2, responseCache.getResponseCacheInfo(responseMock({ 'cache-control': 'max-age=60', 'date': dateStr }))?.expires, 'max-age date'
+  expected = { etag: undefined, expires: date2, lastModified: undefined }
+  assert.eql expected, responseCache.getResponseCacheInfo({ 'cache-CONTROL': 'max-age=60', EXPIRES: dateStr }, date), 'max-age object'
+  assert.eql expected, responseCache.getResponseCacheInfo(responseMock({ 'cache-control': 'max-age=60' }), date), 'max-age mock'
+  assert.eql expected, responseCache.getResponseCacheInfo(responseMock({ 'cache-control': 'max-age=60', 'date': dateStr })), 'max-age date'
 
 exports['getResponseCacheInfo no-cache'] = ->
   assert.eql undefined, responseCache.getResponseCacheInfo({ PRAGMA: 'NO-CACHE', expires: 'Thu, 01 Dec 1994 16:00:00 GMT' }), 'pragma no-cache object'
