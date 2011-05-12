@@ -56,6 +56,9 @@ exports['getResponseCacheInfo expires'] = ->
   assert.eql expected, responseCache.getResponseCacheInfo({ EXPIRES: dateStr }), 'Expires object'
   assert.eql expected, responseCache.getResponseCacheInfo(responseMock { expires: dateStr }), 'Expires mock'
 
+  expected = { etag: undefined, expires: new Date(0), lastModified: undefined }
+  assert.eql expected, responseCache.getResponseCacheInfo({ EXPIRES: 'aaaa' }), 'Expires invalid'
+
 exports['getResponseCacheInfo last-modified'] = ->
   expected = { etag: undefined, expires: undefined, lastModified: date }
   assert.eql expected, responseCache.getResponseCacheInfo({ 'LAST-MODIFIED': dateStr }), 'Last Modified object'

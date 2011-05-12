@@ -58,6 +58,10 @@ parseETag = (value) ->
     ret
 parseDate = (value) ->
   if value
+    value = Date.parse value
+    if isNaN value
+      value = 0
+
     new Date value
 
 getHeaderName = (headers, searchName) ->
