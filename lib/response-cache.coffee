@@ -1,3 +1,18 @@
+exports.create = ->
+  (req, res, next) ->
+    writeHead = res.writeHead
+    res.writeHead = (statusCode, reasonPhrase, headers) ->
+      writeHead.apply @, arguments
+
+    write = res.write
+    res.write = (chunk, encoding) ->
+      write.apply @, arguments
+
+    end = res.end
+    res.end = (chunk, encoding) ->
+      end.apply @, arguments
+
+    next()
 # getRequestCacheInfo : Determines the cache parameters for the given request or header set
 #
 # @param req HTTP request object or header object

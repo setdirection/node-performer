@@ -4,6 +4,8 @@ fs = require("fs");
 
 module.exports = exports = require("./lib/performer.coffee");
 
+exports.responseCache = require("./lib/response-cache.coffee").create();
+
 /*
  * Load all bundled plugins on demand.
  */
