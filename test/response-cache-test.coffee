@@ -37,7 +37,7 @@ exports['getRequestCacheInfo if-none-match'] = ->
   expected = { noMatch: ['*'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': '*' }), 'if-none-match star'
 
-  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': dateStr }), 'if-none-match invalid'
+  assert.eql undefined, responseCache.getRequestCacheInfo({ 'IF-nonE-match': dateStr }), 'if-none-match invalid'
 
 #
 # getResponseCacheInfo
