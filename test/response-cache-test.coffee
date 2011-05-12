@@ -6,6 +6,42 @@ dateStr2 = 'Thu, 01 Dec 1994 16:01:00 GMT'
 date = new Date dateStr
 date2 = new Date dateStr2
 
+#
+# getRequestCacheInfo
+#
+exports['getRequestCacheInfo if-match'] = ->
+  expected = { match: ['"' + dateStr + '"'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': '"' + dateStr + '"' }) , 'if-match single'
+
+  expected = { match: ['W/"' + dateStr + '"'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': 'W/"' + dateStr + '"' }) , 'if-match weak'
+
+  expected = { match: ['"test , test"', 'W/"foo"'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': '"test , test", W/"foo"' }) , 'if-match multiple'
+
+  expected = { match: ['*'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': '*' }), 'if-match star'
+
+  assert.eql undefined, responseCache.getRequestCacheInfo({ 'IF-match': dateStr }), 'if-match invalid'
+
+exports['getRequestCacheInfo if-none-match'] = ->
+  expected = { noMatch: ['"' + dateStr + '"'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': '"' + dateStr + '"' }) , 'if-none-match single'
+
+  expected = { noMatch: ['W/"' + dateStr + '"'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': 'W/"' + dateStr + '"' }) , 'if-none-match weak'
+
+  expected = { noMatch: ['"test , test"', 'W/"foo"'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': '"test , test", W/"foo"' }) , 'if-none-match multiple'
+
+  expected = { noMatch: ['*'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': '*' }), 'if-none-match star'
+
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': dateStr }), 'if-none-match invalid'
+
+#
+# getResponseCacheInfo
+#
 responseMock = (headers) ->
   getHeader: (name) ->
     headers[name.toLowerCase()]

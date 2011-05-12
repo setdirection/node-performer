@@ -1,5 +1,19 @@
+# getRequestCacheInfo : Determines the cache parameters for the given request or header set
+#
+# @param req HTTP request object or header object
+exports.getRequestCacheInfo = (req, baseTime) ->
+  headers = req.headers ? req
+  getHeader = (name) -> headers[getHeaderName headers, name]
 
-# getResponseCacheInfo : Determines the cache parameters for a given request or header set
+  ret =
+    match: parseETag getHeader 'If-Match'
+    noMatch: parseETag getHeader 'If-None-Match'
+    modifiedSince: parseDate getHeader 'If-Modified-Since'
+    unmodifiedSince: parseDate getHeader 'If-Unmodified-Since'
+  if ret.match or ret.noMatch or ret.modifiedSince or ret.unmodifiedSince
+    ret
+
+# getResponseCacheInfo : Determines the cache parameters for a given response or header set
 #
 # @param res HTTP response object or Object mapping headers to value
 exports.getResponseCacheInfo = (res, baseTime) ->
@@ -35,6 +49,13 @@ parseHeader = (value) ->
     kv = component.split '='
     ret[kv[0].toLowerCase()] = kv[1] or true
   ret
+parseETag = (value) ->
+  re = /(\*|(?:W\/)?\".*?\")\s*,?\s*/g
+  value = value?.replace(/^\s*|\s*$/g, '')
+  ret = while match = re.exec value
+    match[1]
+  if ret.length
+    ret
 parseDate = (value) ->
   if value
     new Date value
