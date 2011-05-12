@@ -51,6 +51,34 @@ exports.create = ->
 
     next()
 
+exports.shouldSendResponse = (req, etag, lastModified) ->
+  etagIn = (field) ->
+    for tag in field
+      if tag == '*' or ~tag.indexOf etag
+        return true
+    false
+
+  cacheInfo = exports.getRequestCacheInfo req
+  if cacheInfo
+    # Check the etag
+    etagMatch = if cacheInfo.match?
+        etagIn cacheInfo.match
+      else if cacheInfo.noMatch?
+        not etagIn cacheInfo.noMatch
+      else
+        true
+
+    # Check the modified date
+    lastModified = lastModified.getTime?() ? lastModified
+    timeMatch = if cacheInfo.modifiedSince?
+        lastModified > cacheInfo.modifiedSince.getTime()
+      else if cacheInfo.unmodifiedSince?
+        lastModified < cacheInfo.unmodifiedSince.getTime()
+      else
+        true
+
+    etagMatch and timeMatch
+
 # getRequestCacheInfo : Determines the cache parameters for the given request or header set
 #
 # @param req HTTP request object or header object

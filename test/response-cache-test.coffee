@@ -7,6 +7,73 @@ date = new Date dateStr
 date2 = new Date dateStr2
 
 #
+# shouldSendResponse
+#
+exports['shouldSendResponse if-match etag'] = ->
+  assert.eql true, responseCache.shouldSendResponse
+      headers: { 'IF-match': '"foo"' }
+      '"foo"'
+      Date.now()
+  assert.eql true, responseCache.shouldSendResponse
+      headers: { 'IF-match': 'W/"foo"' }
+      '"foo"'
+      Date.now()
+  assert.eql true, responseCache.shouldSendResponse
+      headers: { 'IF-match': '"test , test", W/"foo"' }
+      '"foo"'
+      Date.now()
+  assert.eql false, responseCache.shouldSendResponse
+      headers: { 'IF-match': '"test , test"' }
+      '"foo"'
+      Date.now()
+  assert.eql true, responseCache.shouldSendResponse
+      headers: { 'IF-match': '*' }
+      '"foo"'
+      Date.now()
+
+exports['shouldSendResponse if-none-match etag'] = ->
+  assert.eql false, responseCache.shouldSendResponse
+      headers: { 'IF-none-match': '"foo"' }
+      '"foo"'
+      Date.now()
+  assert.eql false, responseCache.shouldSendResponse
+      headers: { 'IF-none-match': 'W/"foo"' }
+      '"foo"'
+      Date.now()
+  assert.eql false, responseCache.shouldSendResponse
+      headers: { 'IF-none-match': '"test , test", W/"foo"' }
+      '"foo"'
+      Date.now()
+  assert.eql true, responseCache.shouldSendResponse
+      headers: { 'IF-none-match': '"test , test", "bar"' }
+      '"foo"'
+      Date.now()
+  assert.eql false, responseCache.shouldSendResponse
+      headers: { 'IF-none-match': '*' }
+      '"foo"'
+      Date.now()
+
+exports['shouldSendResponse modified'] = ->
+  assert.eql true, responseCache.shouldSendResponse
+      headers: { 'If-Modified-Since': dateStr }
+      '"foo"'
+      date2
+  assert.eql false, responseCache.shouldSendResponse
+      headers: { 'If-Modified-Since': dateStr }
+      '"foo"'
+      date
+
+exports['shouldSendResponse unmodified'] = ->
+  assert.eql true, responseCache.shouldSendResponse
+      headers: { 'If-UnModified-Since': dateStr }
+      '"foo"'
+      0
+  assert.eql false, responseCache.shouldSendResponse
+      headers: { 'If-UnModified-Since': dateStr }
+      '"foo"'
+      date2
+
+#
 # getRequestCacheInfo
 #
 exports['getRequestCacheInfo if-match'] = ->
