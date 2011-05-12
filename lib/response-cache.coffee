@@ -1,18 +1,56 @@
+cache = {}
+
+NOT_MODIFIED = 304
+
 exports.create = ->
   (req, res, next) ->
+    head = undefined
+    headerInfo = undefined
+    data = []
+
+    if cacheEntry = cache[req.url]
+      res.writeHead cacheEntry.head.statusCode, cacheEntry.head.headers
+      for value in cacheEntry.data
+        res.write value
+      res.end()
+      return
+
     writeHead = res.writeHead
     res.writeHead = (statusCode, reasonPhrase, headers) ->
+      # If the cache response is not modified, ignore this whole mess
+      if statusCode != NOT_MODIFIED
+        headers = headers ? reasonPhrase ? @_headers ? {}
+        headerInfo = exports.getResponseCacheInfo headers
+
+        head = {statusCode, headers}
+
       writeHead.apply @, arguments
 
     write = res.write
     res.write = (chunk, encoding) ->
       write.apply @, arguments
 
+      # Tail call, write header should have been called by now
+      if headerInfo
+        data.push if encoding then new Buffer chunk, encoding else chunk
+
     end = res.end
     res.end = (chunk, encoding) ->
       end.apply @, arguments
 
+      # Tail call, write header should have been called by now
+      if headerInfo
+        if chunk
+          data.push if encoding then new Buffer chunk, encoding else chunk
+        cache[req.url] = {
+          url: req.url
+          head
+          headerInfo
+          data
+        }
+
     next()
+
 # getRequestCacheInfo : Determines the cache parameters for the given request or header set
 #
 # @param req HTTP request object or header object
