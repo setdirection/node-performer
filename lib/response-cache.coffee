@@ -79,6 +79,8 @@ exports.shouldSendResponse = (req, etag, lastModified) ->
         true
 
     etagMatch and timeMatch
+  else
+    true
 
 # getRequestCacheInfo : Determines the cache parameters for the given request or header set
 #
