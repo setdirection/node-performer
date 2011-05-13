@@ -36,11 +36,12 @@ exports.create = ->
 
     end = res.end
     res.end = (chunk, encoding) ->
+      chunkCount = data.length
       end.apply @, arguments
 
       # Tail call, write header should have been called by now
       if headerInfo
-        if chunk
+        if chunk and chunkCount == data.length    # Output data if we have it and it hasn't been written already
           data.push if encoding then new Buffer chunk, encoding else chunk
         cache[req.url] = {
           url: req.url
