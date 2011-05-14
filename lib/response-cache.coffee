@@ -9,10 +9,15 @@ exports.create = ->
     data = []
 
     if cacheEntry = cache[req.url]
-      res.writeHead cacheEntry.head.statusCode, cacheEntry.head.headers
-      for value in cacheEntry.data
-        res.write value
-      res.end()
+      if not exports.shouldSendResponse req, cacheEntry.headerInfo.etag, cacheEntry.headerInfo.lastModified
+        res.statusCode = NOT_MODIFIED
+        res.end()
+      else
+        data = cacheEntry.data
+        res.writeHead cacheEntry.head.statusCode, cacheEntry.head.headers
+        for value in data
+          res.write value
+        res.end()
       return
 
     writeHead = res.writeHead
