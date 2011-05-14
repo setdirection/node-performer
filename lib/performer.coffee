@@ -1,4 +1,5 @@
 {jsdom} = require 'jsdom'
+virtual = require './virtual-resource.coffee'
 
 generateHandlers = (plugins) ->
   handlers = {}
@@ -44,7 +45,8 @@ exports.create = (options) ->
     'text/html': (content) ->
       content.innerHTML
 
-  (req, res, next) ->
+  virtualHandler = virtual.middleware()
+  performerHandler = (req, res, next) ->
     headerInfo = undefined
     buffer = undefined
 
@@ -112,3 +114,7 @@ exports.create = (options) ->
         end.call @, data, encoding
 
     next()
+
+  (res, req, next) ->
+    virtualHandler res, req, ->
+      performerHandler res, req, next
