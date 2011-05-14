@@ -115,10 +115,10 @@ exports.getResponseCacheInfo = (res, baseTime) ->
   pragma = parseHeader getHeader 'pragma'
 
   # Any no-cache directives prevent any operations
-  if cacheControl['no-cache'] or pragma['no-cache']
+  if cacheControl?['no-cache'] or pragma?['no-cache']
     return
 
-  expireTime = if cacheControl['max-age']
+  expireTime = if cacheControl?['max-age']
       baseTime = parseDate(getHeader('date')) ? baseTime ? new Date()
       new Date baseTime.getTime() + parseInt(cacheControl['max-age'])*1000
     else
@@ -133,12 +133,16 @@ exports.getResponseCacheInfo = (res, baseTime) ->
 
 parseHeader = (value) ->
   components = getHeaderComponents value
+  if not components then return
+
   ret = {}
   for component in components ? []
     kv = component.split '='
     ret[kv[0].toLowerCase()] = kv[1] or true
   ret
 parseETag = (value) ->
+  if not value then return
+
   re = /(\*|(?:W\/)?\".*?\")\s*,?\s*/g
   value = value?.replace(/^\s*|\s*$/g, '')
   ret = while match = re.exec value
