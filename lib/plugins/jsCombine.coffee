@@ -1,7 +1,6 @@
 combiner = require '../resource-combiner.coffee'
 
 exports['text/html'] = (req, res, document, next) ->
-  console.log 'jsCombine'
   body = document.querySelector 'body' or document.documentElement
 
   scripts = document.querySelectorAll 'script[src]'
