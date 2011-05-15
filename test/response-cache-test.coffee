@@ -89,7 +89,11 @@ exports['getRequestCacheInfo if-match'] = ->
   expected = { match: ['*'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': '*' }), 'if-match star'
 
-  assert.eql undefined, responseCache.getRequestCacheInfo({ 'IF-match': dateStr }), 'if-match invalid'
+  expected = { match: ['Thu', '01 Dec 1994 16:00:00 GMT'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': dateStr })
+
+  expected = { match: ['test', 'test'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': 'test , test' })
 
 exports['getRequestCacheInfo if-none-match'] = ->
   expected = { noMatch: ['"' + dateStr + '"'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
@@ -104,7 +108,8 @@ exports['getRequestCacheInfo if-none-match'] = ->
   expected = { noMatch: ['*'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': '*' }), 'if-none-match star'
 
-  assert.eql undefined, responseCache.getRequestCacheInfo({ 'IF-nonE-match': dateStr }), 'if-none-match invalid'
+  expected = { noMatch: ['Thu', '01 Dec 1994 16:00:00 GMT'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': dateStr })
 
 
 exports['getRequestCacheInfo cache-control'] = ->

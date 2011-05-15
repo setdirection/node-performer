@@ -159,10 +159,10 @@ parseHeader = (value) ->
 parseETag = (value) ->
   if not value then return
 
-  re = /(\*|(?:W\/)?\".*?\")\s*,?\s*/g
+  re = /(\*|(?:W\/)?\".+?\"|[^,]+)\s*,?\s*/g
   value = value?.replace(/^\s*|\s*$/g, '')
   ret = while match = re.exec value
-    match[1]
+    match[1].replace(/^\s*|\s*$/g, '')
   if ret.length
     ret
 parseDate = (value) ->
