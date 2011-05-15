@@ -77,34 +77,44 @@ exports['shouldSendResponse unmodified'] = ->
 # getRequestCacheInfo
 #
 exports['getRequestCacheInfo if-match'] = ->
-  expected = { match: ['"' + dateStr + '"'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  expected = { match: ['"' + dateStr + '"'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': '"' + dateStr + '"' }) , 'if-match single'
 
-  expected = { match: ['W/"' + dateStr + '"'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  expected = { match: ['W/"' + dateStr + '"'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': 'W/"' + dateStr + '"' }) , 'if-match weak'
 
-  expected = { match: ['"test , test"', 'W/"foo"'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  expected = { match: ['"test , test"', 'W/"foo"'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': '"test , test", W/"foo"' }) , 'if-match multiple'
 
-  expected = { match: ['*'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  expected = { match: ['*'], noMatch: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-match': '*' }), 'if-match star'
 
   assert.eql undefined, responseCache.getRequestCacheInfo({ 'IF-match': dateStr }), 'if-match invalid'
 
 exports['getRequestCacheInfo if-none-match'] = ->
-  expected = { noMatch: ['"' + dateStr + '"'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  expected = { noMatch: ['"' + dateStr + '"'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': '"' + dateStr + '"' }) , 'if-none-match single'
 
-  expected = { noMatch: ['W/"' + dateStr + '"'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  expected = { noMatch: ['W/"' + dateStr + '"'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': 'W/"' + dateStr + '"' }) , 'if-none-match weak'
 
-  expected = { noMatch: ['"test , test"', 'W/"foo"'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  expected = { noMatch: ['"test , test"', 'W/"foo"'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': '"test , test", W/"foo"' }) , 'if-none-match multiple'
 
-  expected = { noMatch: ['*'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined }
+  expected = { noMatch: ['*'], match: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: undefined }
   assert.eql expected, responseCache.getRequestCacheInfo({ 'IF-nonE-match': '*' }), 'if-none-match star'
 
   assert.eql undefined, responseCache.getRequestCacheInfo({ 'IF-nonE-match': dateStr }), 'if-none-match invalid'
+
+
+exports['getRequestCacheInfo cache-control'] = ->
+  expected = { noMatch: undefined, match: undefined, modifiedSince: undefined, unmodifiedSince: undefined, cacheControl: {'max-age': 4}  }
+  assert.eql expected, responseCache.getRequestCacheInfo({ 'cache-control': 'max-age=4'})
+
+exports['getRequestCacheInfo no-cache'] = ->
+  assert.eql undefined, responseCache.getRequestCacheInfo({ PRAGMA: 'NO-CACHE', noMatch: ['*'] }), 'pragma no-cache object'
+  assert.eql undefined, responseCache.getRequestCacheInfo({ 'CACHE-control': ' NO-cache, test', noMatch: ['*'] }), 'cache-control no-cache object'
+  assert.eql undefined, responseCache.getRequestCacheInfo({}), 'no-headers no-cache object'
 
 #
 # getResponseCacheInfo

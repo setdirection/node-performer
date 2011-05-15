@@ -94,12 +94,20 @@ exports.getRequestCacheInfo = (req, baseTime) ->
   headers = req.headers ? req
   getHeader = (name) -> headers[getHeaderName headers, name]
 
+  cacheControl = parseHeader getHeader 'cache-control'
+  pragma = parseHeader getHeader 'pragma'
+
+  # Any no-cache directives prevent any operations
+  if cacheControl?['no-cache'] or pragma?['no-cache']
+    return
+
   ret =
+    cacheControl: cacheControl
     match: parseETag getHeader 'If-Match'
     noMatch: parseETag getHeader 'If-None-Match'
     modifiedSince: parseDate getHeader 'If-Modified-Since'
     unmodifiedSince: parseDate getHeader 'If-Unmodified-Since'
-  if ret.match or ret.noMatch or ret.modifiedSince or ret.unmodifiedSince
+  if ret.cacheControl or ret.match or ret.noMatch or ret.modifiedSince or ret.unmodifiedSince
     ret
 
 # getResponseCacheInfo : Determines the cache parameters for a given response or header set
