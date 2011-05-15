@@ -26,6 +26,9 @@ exports.combine = ({resources, req, separator, contentType, prefix}) ->
       for deferred in resource.deferred
         deferred resource.content
 
+      # Clear the deferred list so future requests will be handled directly
+      resource.deferred = undefined
+
     for content in resource.content
       do (content) ->
         chunks = []
@@ -48,8 +51,11 @@ exports.combine = ({resources, req, separator, contentType, prefix}) ->
 
     resource.href = virtual.create
       content: (callback) ->
-        resource.deferred.push callback
-        checkComplete()
+        if resource.deferred
+          resource.deferred.push callback
+          checkComplete()
+        else
+          callback resource.content
       contentType: contentType
       prefix: prefix
 
