@@ -10,8 +10,8 @@ exports.create = ->
 
     if cacheEntry = cache[req.url]
       if not exports.shouldSendResponse req, cacheEntry.headerInfo.etag, cacheEntry.headerInfo.lastModified
-        res.statusCode = NOT_MODIFIED
-        res.end()
+        exports.setCacheHeaders res, cacheEntry.headerInfo.etag, cacheEntry.headerInfo.lastModified
+        exports.sendNotModified res
       else
         data = cacheEntry.data
         res.writeHead cacheEntry.head.statusCode, cacheEntry.head.headers
@@ -56,6 +56,14 @@ exports.create = ->
         }
 
     next()
+
+exports.setCacheHeaders = (res, etag, lastModified) ->
+  res.setHeader 'Etag', etag
+  res.setHeader 'Last-Modified', lastModified.toUTCString?() ? lastModified
+
+exports.sendNotModified = (res) ->
+  res.statusCode = exports.NOT_MODIFIED
+  res.end()
 
 exports.shouldSendResponse = (req, etag, lastModified) ->
   etagIn = (field) ->
