@@ -1,7 +1,6 @@
 combiner = require '../resource-combiner.coffee'
 
 exports['text/html'] = (req, res, document, next) ->
-  console.log 'cssToHead'
   head = document.querySelector 'head'
   if not head
     head = document.createElement 'head'
