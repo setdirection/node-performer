@@ -5,7 +5,7 @@ resources = {}
 
 # TODO : Implement cache invalidation on a periodic basis here
 exports.combine = ({resources, req, separator, contentType, prefix}) ->
-  id = resources.length + (resources.href for resource in resources).join ':'
+  id = resources.length + (resource.href for resource in resources).join ':'
 
   if not resource = resources[id]
     # Create a new resource and load async
