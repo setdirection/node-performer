@@ -112,8 +112,8 @@ exports['getRequestCacheInfo cache-control'] = ->
   assert.eql expected, responseCache.getRequestCacheInfo({ 'cache-control': 'max-age=4'})
 
 exports['getRequestCacheInfo no-cache'] = ->
-  assert.eql undefined, responseCache.getRequestCacheInfo({ PRAGMA: 'NO-CACHE', noMatch: ['*'] }), 'pragma no-cache object'
-  assert.eql undefined, responseCache.getRequestCacheInfo({ 'CACHE-control': ' NO-cache, test', noMatch: ['*'] }), 'cache-control no-cache object'
+  assert.eql { noCache: true }, responseCache.getRequestCacheInfo({ PRAGMA: 'NO-CACHE', noMatch: ['*'] }), 'pragma no-cache object'
+  assert.eql { noCache: true }, responseCache.getRequestCacheInfo({ 'CACHE-control': ' NO-cache, test', noMatch: ['*'] }), 'cache-control no-cache object'
   assert.eql undefined, responseCache.getRequestCacheInfo({}), 'no-headers no-cache object'
 
 #

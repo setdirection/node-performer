@@ -99,7 +99,7 @@ exports.getRequestCacheInfo = (req, baseTime) ->
 
   # Any no-cache directives prevent any operations
   if cacheControl?['no-cache'] or pragma?['no-cache']
-    return
+    return { noCache: true }
 
   ret =
     cacheControl: cacheControl
