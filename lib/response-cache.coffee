@@ -75,7 +75,7 @@ exports.shouldSendResponse = (req, etag, lastModified) ->
         true
 
     # Check the modified date
-    lastModified = lastModified.getTime?() ? lastModified
+    lastModified = lastModified?.getTime?() ? lastModified
     timeMatch = if cacheInfo.modifiedSince?
         lastModified > cacheInfo.modifiedSince.getTime()
       else if cacheInfo.unmodifiedSince?
