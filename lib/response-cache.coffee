@@ -62,7 +62,7 @@ exports.setCacheHeaders = (res, etag, lastModified) ->
   res.setHeader 'Last-Modified', lastModified.toUTCString?() ? lastModified
 
 exports.sendNotModified = (res) ->
-  res.statusCode = exports.NOT_MODIFIED
+  res.statusCode = NOT_MODIFIED
   res.end()
 
 exports.shouldSendResponse = (req, etag, lastModified) ->
