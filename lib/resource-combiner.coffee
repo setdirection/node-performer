@@ -1,15 +1,15 @@
 resourceRequest = require './resource-request.coffee'
 virtual = require './virtual-resource.coffee'
 
-resources = {}
+resourceCache = {}
 
 # TODO : Implement cache invalidation on a periodic basis here
 exports.combine = ({resources, req, separator, contentType, prefix}) ->
   id = resources.length + (resource.href for resource in resources).join ':'
 
-  if not resource = resources[id]
+  if not resource = resourceCache[id]
     # Create a new resource and load async
-    resource = resources[id] = {
+    resource = resourceCache[id] = {
       id
       content: {href: resource.href, complete: false} for resource in resources
       deferred: []
