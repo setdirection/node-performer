@@ -10,18 +10,18 @@
   "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "git://github.com/kpdecker/node-performer.git"
+    "url": "git://github.com/setdirection/node-performer.git"
   },
   "licenses": [
     {
       "type": "BSD",
-      "url": "http://github.com/kpdecker/node-performer/blob/master/LICENSE"
+      "url": "http://github.com/setdirection/node-performer/blob/master/LICENSE"
     }
   ],
   "author": "Kevin Decker <kpdecker@gmail.com> (http://incaseofstairs.com)",
   "bugs": {
     "email": "kpdecker@gmail.com",
-    "url": "http://github.com/kpdecker/node-performer/issues"
+    "url": "http://github.com/setdirection/node-performer/issues"
   },
   "main": "index",
   "scripts": {
