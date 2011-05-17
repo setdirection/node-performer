@@ -7,40 +7,21 @@ exports.create = ->
     head = undefined
     headerInfo = undefined
     data = []
-    checkingCache = false
-    blockData = false
+
+    if cacheEntry = cache[req.url]
+      if not exports.shouldSendResponse req, cacheEntry.headerInfo.etag, cacheEntry.headerInfo.lastModified
+        exports.setCacheHeaders res, cacheEntry.headerInfo.etag, cacheEntry.headerInfo.lastModified
+        exports.sendNotModified res
+      else
+        data = cacheEntry.data
+        res.writeHead cacheEntry.head.statusCode, cacheEntry.head.headers
+        for value in data
+          res.write value
+        res.end()
+      return
 
     writeHead = res.writeHead
-    write = res.write
-    end = res.end
-
-    sendCacheEntry = ->
-      if not blockData
-        blockData = true
-        data = cacheEntry.data
-        writeHead.call res, cacheEntry.head.statusCode, cacheEntry.head.headers
-        for value in data
-          write.call res, value
-        end.call res
-
-    cacheInfo = exports.getRequestCacheInfo req
-    if cacheEntry = cache[req.url]
-      headerInfo = cacheEntry.headerInfo
-
-      # Promote the request to conditional if it isn't already and we aren't in a no check case
-      if not exports.isConditionalRequest cacheInfo
-        checkingCache = true
-        if headerInfo.lastModified
-          req.headers['if-modified-since'] = headerInfo.lastModified.toUTCString()
-        if headerInfo.etag
-          req.headers['if-none-match'] = ""+headerInfo.etag
-
     res.writeHead = (statusCode, reasonPhrase, headers) ->
-      if statusCode == NOT_MODIFIED and checkingCache
-        @statusCode = statusCode
-        sendCacheEntry()
-        return
-
       # If the cache response is not modified, ignore this whole mess
       if statusCode != NOT_MODIFIED
         headers = headers ? reasonPhrase ? @_headers ? {}
@@ -50,6 +31,7 @@ exports.create = ->
 
       writeHead.apply @, arguments
 
+    write = res.write
     res.write = (chunk, encoding) ->
       write.apply @, arguments
 
@@ -57,11 +39,8 @@ exports.create = ->
       if headerInfo
         data.push if encoding then new Buffer chunk, encoding else chunk
 
+    end = res.end
     res.end = (chunk, encoding) ->
-      if @statusCode == NOT_MODIFIED and checkingCache
-        sendCacheEntry()
-        return
-
       chunkCount = data.length
       end.apply @, arguments
 
@@ -138,15 +117,6 @@ exports.getRequestCacheInfo = (req, baseTime) ->
     unmodifiedSince: parseDate getHeader 'If-Unmodified-Since'
   if ret.cacheControl or ret.match or ret.noMatch or ret.modifiedSince or ret.unmodifiedSince
     ret
-
-exports.isConditionalRequest = (req) ->
-  cacheInfo = if req?.headers
-      exports.getRequestCacheInfo req
-    else
-      req
-
-  not cacheInfo or
-    (not cacheInfo.match and not cacheInfo.noMatch and not cacheInfo.modifiedSince and not cacheInfo.unmodifiedSince)
 
 # getResponseCacheInfo : Determines the cache parameters for a given response or header set
 #
