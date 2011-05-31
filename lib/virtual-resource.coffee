@@ -1,17 +1,21 @@
 responseCache = require './response-cache.coffee'
+crypto = require 'crypto'
 
 resources = {}
-count = 0
 
-exports.create = ({content, contentType, prefix, path, headers}) ->
+exports.create = ({id, content, contentType, prefix, path, headers}) ->
+  if not path
+    hash = crypto.createHash 'sha1'
+    hash.update id
+    path = hash.digest 'hex'
+
   resource = {
     content
     contentType
     modified: new Date()
     headers
-    path: (prefix ? '') + (path ? count)
+    path: (prefix ? '') + path
   }
-  count++
   resources[resource.path] = resource
   resource.path
 

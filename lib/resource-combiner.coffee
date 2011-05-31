@@ -50,6 +50,7 @@ exports.combine = ({resources, req, separator, contentType, prefix}) ->
         )
 
     resource.href = virtual.create
+      id: id
       content: (callback) ->
         if resource.deferred
           resource.deferred.push callback
