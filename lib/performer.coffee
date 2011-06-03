@@ -1,5 +1,5 @@
 {jsdom} = require 'jsdom'
-virtual = require './virtual-resource.coffee'
+combiner = require './resource-combiner.coffee'
 
 generateHandlers = (plugins) ->
   handlers = {}
@@ -45,7 +45,7 @@ exports.create = (options) ->
     'text/html': (content) ->
       content.innerHTML
 
-  virtualHandler = virtual.middleware()
+  combinerHandler = combiner.middleware()
   performerHandler = (req, res, next) ->
     headerInfo = undefined
     buffer = undefined
@@ -116,5 +116,5 @@ exports.create = (options) ->
     next()
 
   (res, req, next) ->
-    virtualHandler res, req, ->
+    combinerHandler res, req, ->
       performerHandler res, req, next

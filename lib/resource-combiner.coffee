@@ -1,6 +1,8 @@
+responseCache = require './response-cache.coffee'
 resourceRequest = require './resource-request.coffee'
-virtual = require './virtual-resource.coffee'
 crypto = require 'crypto'
+
+contentPath = '/virtual/'
 
 idResourceCache = {}
 pathResourceCache = {}
@@ -27,6 +29,8 @@ exports.combine = ({resources, req, separator, contentType, prefix}) ->
     # Create a new resource and load async
     resource = idResourceCache[id] = {
       id
+      contentType
+      modified: new Date()
       content: {href: resource.href, complete: false} for resource in resources
       deferred: []
     }
@@ -57,16 +61,38 @@ exports.combine = ({resources, req, separator, contentType, prefix}) ->
                 checkComplete resource
         )
 
-    resource.href = virtual.create
-      id: id
-      content: (callback) ->
-        if resource.deferred
-          resource.deferred.push callback
-          checkComplete()
-        else
-          callback resource.content
-      contentType: contentType
-      prefix: prefix
+  contentPath + path
 
-  # TODO Figure out a better way to map to the virtual middleware
-  '/virtual/' + resource.href
+exports.middleware = (options) ->
+  contentPath = options?.contentPath ? contentPath
+
+  (req, res, next) ->
+    # Anything that starts with the content path is a potential resource
+    if req.url.indexOf(contentPath) == 0
+      resource = pathResourceCache[req.url.substring contentPath.length]
+      if not resource
+        return next()
+
+      sendContent = ->
+        # WARN: This will need to be redone using md5 or similar if there are multiple servers
+        etag = resource.modified.getTime()
+        modified = resource.modified
+        responseCache.setCacheHeaders res, etag, modified
+
+        if responseCache.shouldSendResponse req, etag, modified
+          res.setHeader 'Content-Type', resource.contentType
+          res.setHeader 'Content-Length', resource.content.length
+          res.setHeader header, value for header, value of resource.headers
+          res.end resource.content
+        else
+          responseCache.sendNotModified res
+
+      if resource.deferred
+        resource.deferred.push (content) ->
+          resource.content = content
+          sendContent()
+        checkComplete resource
+      else
+        sendContent()
+    else
+      next()
