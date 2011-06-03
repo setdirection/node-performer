@@ -1,7 +1,23 @@
 resourceRequest = require './resource-request.coffee'
 virtual = require './virtual-resource.coffee'
+crypto = require 'crypto'
 
 idResourceCache = {}
+pathResourceCache = {}
+
+checkComplete = (resource) ->
+  # Determine if there are any incomplete operations
+  for content in resource.content
+    if not content.complete
+      return false
+
+  resource.content = new Buffer (content.data for content in resource.content).join(''), 'utf8'
+
+  for deferred in resource.deferred
+    deferred resource.content
+
+  # Clear the deferred list so future requests will be handled directly
+  resource.deferred = undefined
 
 # TODO : Implement cache invalidation on a periodic basis here
 exports.combine = ({resources, req, separator, contentType, prefix}) ->
@@ -15,19 +31,11 @@ exports.combine = ({resources, req, separator, contentType, prefix}) ->
       deferred: []
     }
 
-    checkComplete = ->
-      # Determine if there are any incomplete operations
-      for content in resource.content
-        if not content.complete
-          return false
-
-      resource.content = (content.data for content in resource.content).join ''
-
-      for deferred in resource.deferred
-        deferred resource.content
-
-      # Clear the deferred list so future requests will be handled directly
-      resource.deferred = undefined
+    # Generate a unique key that should surivive restarts and multiple instances
+    hash = crypto.createHash 'sha1'
+    hash.update id
+    path = (prefix ? '') + hash.digest 'hex'
+    pathResourceCache[path] = resource
 
     for content in resource.content
       do (content) ->
@@ -46,7 +54,7 @@ exports.combine = ({resources, req, separator, contentType, prefix}) ->
               res.on 'end', ->
                 content.data = chunks.join('') + (separator ? '')
                 content.complete = true
-                checkComplete()
+                checkComplete resource
         )
 
     resource.href = virtual.create
