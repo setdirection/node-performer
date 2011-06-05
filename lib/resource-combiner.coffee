@@ -47,15 +47,15 @@ exports.combine = ({resources, req, separator, contentType, prefix}) ->
         resourceRequest.get(
           content.href,
           req,
-          (err, res) ->
+          (err, response) ->
             if err
               console.log "Unable to load combined resource #{content.href}", err
               content.data = ''
               content.complete = true
             else
-              res.on 'data', (chunk) ->
+              response.on 'data', (chunk) ->
                 chunks.push chunk
-              res.on 'end', ->
+              response.on 'end', ->
                 content.data = chunks.join('') + (separator ? '')
                 content.complete = true
                 checkComplete resource
