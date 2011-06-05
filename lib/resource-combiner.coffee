@@ -22,8 +22,8 @@ checkComplete = (resource) ->
   resource.deferred = undefined
 
 # TODO : Implement cache invalidation on a periodic basis here
-exports.combine = ({resources, req, separator, contentType, prefix}) ->
-  id = resources.length + (resource.href for resource in resources).join ':'
+exports.combine = ({resources, req, root, separator, contentType, prefix}) ->
+  id = resources.length + (item.href for item in resources).join ':'
 
   if not resource = idResourceCache[id]
     # Create a new resource and load async
@@ -41,15 +41,16 @@ exports.combine = ({resources, req, separator, contentType, prefix}) ->
     path = (prefix ? '') + hash.digest 'hex'
     pathResourceCache[path] = resource
 
+    root = if root then resourceRequest.relativeRoot(req, root) else resourceRequest.relativeRoot(req)
     for content in resource.content
       do (content) ->
         chunks = []
         resourceRequest.get(
           content.href,
-          req,
+          root,
           (err, response) ->
             if err
-              console.log "Unable to load combined resource #{content.href}", err
+              console.error "Unable to load combined resource #{content.href}", root, err
               content.data = ''
               content.complete = true
             else
