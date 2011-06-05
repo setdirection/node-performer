@@ -79,6 +79,52 @@ exports['Local URL Folder relativeRoot Cached'] = ->
 
   assert.eql {host: '127.0.0.1', port: 123, path: '/foo/test?1=1'}, resourceRequest.options('test?1=1', req), 'Local url folder path'
 
+exports['Local URL Folder relativeRoot change url Cached'] = ->
+  req =
+    resourceRequest.relativeRoot
+      socket:
+        address: ->
+          address: '127.0.0.1'
+          port: 123
+      url: "/foo/bar",
+      "/foo/baz/bar"
+
+  assert.eql {host: '127.0.0.1', port: 123, path: '/foo/baz/bar'}, resourceRequest.options('', req)
+  assert.eql {host: '127.0.0.1', port: 123, path: '/'}, resourceRequest.options('/', req), 'Local url folder root /'
+  assert.eql {host: '127.0.0.1', port: 123, path: '/foo/baz/bar?1=1'}, resourceRequest.options('?1=1', req), 'Local url folder root param'
+
+  assert.eql {host: '127.0.0.1', port: 123, path: '/foo/baz/test?1=1'}, resourceRequest.options('test?1=1', req), 'Local url folder path'
+
+
+exports['Root relativeRoot'] = ->
+  req =
+    resourceRequest.relativeRoot
+      socket:
+        address: ->
+          address: '127.0.0.1'
+          port: 123
+      url: "/"
+
+  assert.eql {host: '127.0.0.1', port: 123, path: '/'}, resourceRequest.options('', req)
+  assert.eql {host: '127.0.0.1', port: 123, path: '/'}, resourceRequest.options('/', req), 'Local url folder root /'
+  assert.eql {host: '127.0.0.1', port: 123, path: '/?1=1'}, resourceRequest.options('?1=1', req), 'Local url folder root param'
+
+  assert.eql {host: '127.0.0.1', port: 123, path: '/test?1=1'}, resourceRequest.options('test?1=1', req), 'Local url folder path'
+
+  req =
+    resourceRequest.relativeRoot
+      socket:
+        address: ->
+          address: '127.0.0.1'
+          port: 123
+      url: ""
+
+  assert.eql {host: '127.0.0.1', port: 123, path: '/'}, resourceRequest.options('', req)
+  assert.eql {host: '127.0.0.1', port: 123, path: '/'}, resourceRequest.options('/', req), 'Local url folder root /'
+  assert.eql {host: '127.0.0.1', port: 123, path: '/?1=1'}, resourceRequest.options('?1=1', req), 'Local url folder root param'
+
+  assert.eql {host: '127.0.0.1', port: 123, path: '/test?1=1'}, resourceRequest.options('test?1=1', req), 'Local url folder path'
+
 exports['Local URL Socket'] = ->
   try
     server = net.createServer ->

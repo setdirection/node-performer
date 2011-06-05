@@ -8,15 +8,15 @@ getLocalConn = (req) ->
   host: addr.address
   port: addr.port
 
-exports.relativeRoot = (req) ->
-  options = exports.options '', req
+exports.relativeRoot = (req, path) ->
+  options = exports.options '', req, path
 
   address: options.host
   port: options.port
   url: options.path
 
-exports.options = (href, req) ->
-  options = url.parse url.resolve 'http://localhost'+req.url, href
+exports.options = (href, req, path) ->
+  options = url.parse url.resolve 'http://localhost'+(path ? req.url), href
   local = getLocalConn req if options.hostname == 'localhost'
 
   host: local?.host ? options.hostname
