@@ -1,7 +1,9 @@
 responseCache = require './response-cache.coffee'
 resourceRequest = require './resource-request.coffee'
 crypto = require 'crypto'
+redis = require 'redis'
 
+client = undefined    # Redis client, created when the middleware is created
 contentPath = '/virtual/'
 
 idResourceCache = {}
@@ -66,6 +68,14 @@ exports.combine = ({resources, req, root, separator, contentType, prefix}) ->
 
 exports.middleware = (options) ->
   contentPath = options?.contentPath ? contentPath
+
+  # Init the redis connection unless expicitly disabled by the caller
+  if not options?.disableRedis
+    client = redis.createClient options?.redisPort, options?.redisHost
+    client.on 'error', (err) ->
+      # Simply log any redis failures. If we do not have access to redis we might be able
+      # to continue operating normally if the proper resource definitions have been cached.
+      console.error 'Error communicating with the redis instance', err
 
   (req, res, next) ->
     # Anything that starts with the content path is a potential resource
