@@ -3,10 +3,17 @@ url = require 'url'
 
 # Determines the endpoint that the current server is listening on
 getLocalConn = (req) ->
-  addr = req.socket.address()
+  addr = if req.socket? then req.socket.address() else req
 
   host: addr.address
   port: addr.port
+
+exports.relativeRoot = (req) ->
+  options = exports.options '', req
+
+  address: options.host
+  port: options.port
+  url: options.path
 
 exports.options = (href, req) ->
   options = url.parse url.resolve 'http://localhost'+req.url, href
