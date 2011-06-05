@@ -69,11 +69,7 @@ exports.middleware = (options) ->
   (req, res, next) ->
     # Anything that starts with the content path is a potential resource
     if req.url.indexOf(contentPath) == 0
-      resource = pathResourceCache[req.url.substring contentPath.length]
-      if not resource
-        return next()
-
-      sendContent = ->
+      sendContent = (resource) ->
         # WARN: This will need to be redone using md5 or similar if there are multiple servers
         etag = resource.modified.getTime()
         modified = resource.modified
@@ -87,12 +83,20 @@ exports.middleware = (options) ->
         else
           responseCache.sendNotModified res
 
-      if resource.deferred
-        resource.deferred.push (content) ->
-          resource.content = content
-          sendContent()
-        checkComplete resource
+      checkDeferred = (resource) ->
+        if resource.deferred
+          resource.deferred.push (content) ->
+            resource.content = content
+            sendContent resource
+          checkComplete resource
+        else
+          sendContent resource
+
+      path = req.url.substring contentPath.length
+      resource = pathResourceCache[path]
+      if not resource
+        next()
       else
-        sendContent()
+        checkDeferred resource
     else
       next()
