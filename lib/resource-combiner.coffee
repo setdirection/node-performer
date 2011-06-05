@@ -9,6 +9,43 @@ contentPath = '/virtual/'
 idResourceCache = {}
 pathResourceCache = {}
 
+HREF_PREFIX = 'href_'
+HREF_PREFIX_LEN = HREF_PREFIX.length
+
+externalResourceCache =
+  store: ({path, prefix, separator, contentType, root, hrefs}) ->
+    separator = separator ? ''
+    root = root ? ''
+    info = {
+      path
+      prefix
+      separator
+      contentType
+      root
+    }
+
+    # Flatten the array into hash components
+    for i in [0...hrefs.length]
+      info[HREF_PREFIX + i] = hrefs[i]
+
+    client?.hmset path, info
+  load: (path, callback) ->
+    client?.hgetall path, (err, obj) ->
+      if err or not obj.path
+        console.error "Failed to retrieve #{path} from redis instance", err
+        callback()
+      else
+        resource = {
+          root: {}
+          resources: []
+        }
+        for key, value of obj
+          if key.indexOf(HREF_PREFIX) == 0
+            resource.resources[parseInt key.substring HREF_PREFIX_LEN] = { href: value }
+          else
+            resource[key] = value
+        callback resource
+
 checkComplete = (resource) ->
   # Determine if there are any incomplete operations
   for content in resource.content
@@ -64,6 +101,16 @@ exports.combine = ({resources, req, root, separator, contentType, prefix}) ->
                 checkComplete resource
         )
 
+  # Let the world know
+  externalResourceCache.store {
+    path
+    prefix
+    separator
+    contentType
+    root: root.url
+    hrefs: (item.href for item in resources)
+  }
+
   contentPath + path
 
 exports.middleware = (options) ->
@@ -106,7 +153,16 @@ exports.middleware = (options) ->
       path = req.url.substring contentPath.length
       resource = pathResourceCache[path]
       if not resource
-        next()
+        externalResourceCache.load path, (resource) ->
+          if not resource
+            return next()
+
+          # Init the new object
+          resource.req = req
+          exports.combine resource
+
+          # Start wait for build to complete then serve it up
+          checkDeferred pathResourceCache[path]
       else
         checkDeferred resource
     else
